@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Sans:400,700');
+
+h1, h2, h3 { line-height: 1.1; }
+code { font-family: 'Consolas'; }
+
+/* Title slide */
+div.title-slide h1 { font-size: 48px; margin-bottom: 15px; }
+div.title-slide h2 { font-size: 36px; margin-top: 15px; margin-bottom: 80px; }
+div.title-slide h3 { font-size: 30px; margin-top: 20px; margin-bottom: 20px; }
+
+.remark-slide-content { font-family: 'PT Sans'; font-size: 24px; padding: 1em 3em; }
+.remark-slide-content h1 { font-size: 48px; margin-bottom: 20px; }
+.remark-slide-content li>p { margin-bottom: 10px; }
+.remark-slide-content p>code,
+.remark-slide-content li>code {
+    color: #555;
+    background-color: #f8f8f8;
+    padding: 0 10px;
+    display: inline-block;
+}
+
+.comic { font-family: 'Comic Sans MS'; }
+
+/*.remark-slide-content li { line-height: 2; }*/
+.good, .emph { color: #4682b4; }
+.bad, .warning  { color: #d8000c; }
+
+.left27 { float: left; width: 27%; }
+.right70 { float: right; width: 70%; }
+.left57 { float: left; width: 57%; }
+.right40 { float: right; width: 40%; }
+.left69 { float: left; width: 69%; }
+.right30 { float: right; width: 30%; }
