@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Prettier R Graphs and Documents</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Yixuan Qiu" />
+    <script src="libs/header-attrs-2.5/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Prettier R Graphs and Documents
+## with <code>showtext</code> + <code>prettydoc</code>
+### Yixuan Qiu
+### Greater Cleveland R Group
+### 2020/10/28
+
+---
+
+class: center, middle
+
+&lt;image width="60%" src="images/face-sticker.png" /&gt;
+
+
+
+---
+class: inverse, center, middle
+
+# Get Started
+
+---
+
+# A Typical Data Visualization
+
+.center[![](images/horror.png)]
+
+???
+
+Code derived from http://gradientdescending.com/adding-custom-fonts-to-ggplot-in-r/
+
+---
+class: inverse
+
+# Let's Change the Fonts
+
+.center[![](images/horror-showtext.png)]
+
+http://gradientdescending.com/adding-custom-fonts-to-ggplot-in-r/
+
+---
+
+# Why Changing Fonts was Hard in R
+
+--
+
+- Device dependent
+
+  - `windowsFonts()` for `windows()` devices
+  - `X11Fonts()` for `X11()` devices
+  - `quartzFonts()` for `quartz()` devices
+  - `postscriptFonts()`, `pdfFonts()`, etc.
+
+--
+
+- Many difficulties for the PDF device
+
+  - Limited choices, `names(pdfFonts())`
+  - Does not support TTF/OTF fonts
+  - Needs to embed fonts using Ghostscript
+
+--
+
+- Ambiguity of font names
+
+- Reproducibility
+
+  - Other people need to install the same fonts to use your code
+
+---
+
+# Hello, World
+
+
+```r
+library(showtext)
+# download.file("http://simonsoftware.se/other/xkcd.ttf",
+#               "fonts/xkcd.ttf", mode = "wb")
+*font_add(family = "xkcd", regular = "fonts/xkcd.ttf")
+*font_add_google(name = "Turret Road")
+*showtext_auto()
+
+pie(c(0.9, 0.1), col = c("#F8766D", "#00BFC4"), radius = 1, border = NA,
+    labels = c("Test Internet connection", "Find useful information"),
+    family = "xkcd", cex = 2)
+title("When you visit google.com", family = "Turret Road", cex.main = 2.5)
+```
+
+&lt;img src="pretty_files/figure-html/unnamed-chunk-1-1.svg" width="80%" style="display: block; margin: auto;" /&gt;
+
+???
+
+https://www.pinterest.com/pin/127719339412665422/
+
+---
+class: center, middle
+
+# What's Happening Here?
+
+---
+
+# Core Functions
+
+--
+
+- `font_add()`: Register a font file
+
+  - `family`: The family name you want to use in R
+  - `regular`: Font file for the "regular" font face
+  - `bold`: Font file for the "bold" font face
+  - ...
+
+--
+
+- `font_add_google()`: Register a font from [Google Fonts](https://fonts.google.com/)
+
+  - `name`: The font name in the Google Fonts database
+  - `family`: The family name you want to use in R
+
+--
+
+- `showtext_auto()`: Enable `showtext`. **That's it!**
+
+- `showtext_opts(dpi = 200)`: If you need to adjust the DPI
+
+---
+
+# How showtext works
+
+&lt;div class="center"&gt;
+&lt;image width="80%" src="images/internal.png" /&gt;
+&lt;/div&gt;
+
+--
+
+- .warning[Caveat: text is no longer searchable in `showtext`-enabled plots]
+
+---
+class: middle, center
+
+# Fantastic Fonts
+
+### and Where to Find Them
+
+---
+
+# Font Resources (for free)
+
+- Explore your local machine using `font_files()`
+
+- Google Fonts (https://fonts.google.com/)
+
+- Font Squirrel (https://www.fontsquirrel.com/)
+
+- DaFont (https://www.dafont.com/)
+
+- 1001 Fonts (https://www.1001fonts.com/)
+
+- Many others
+
+---
+
+# Useful Utilities
+
+--
+
+- `font_families()`: List registered font families
+
+```
+## [1] "sans"         "serif"        "mono"         "wqy-microhei" "Open Sans"   
+## [6] "xkcd"         "Turret Road"
+```
+
+--
+
+- `font_files()`: List font files that are available in the system
+
+```
+##               path         file       family        face      version
+## 1 C:/Windows/Fonts  AGENCYB.TTF    Agency FB        Bold Version 1.01
+## 2 C:/Windows/Fonts  AGENCYR.TTF    Agency FB     Regular Version 1.01
+## 3 C:/Windows/Fonts    ALGER.TTF     Algerian     Regular Version 1.57
+## 4 C:/Windows/Fonts  ANTQUAB.TTF Book Antiqua        Bold Version 2.35
+## 5 C:/Windows/Fonts ANTQUABI.TTF Book Antiqua Bold Italic Version 2.35
+## 6 C:/Windows/Fonts  ANTQUAI.TTF Book Antiqua      Italic Version 2.35
+```
+
+--
+
+- `font_install()`: Install fonts to the local machine (more details later)
+
+---
+
+# Save Frequently Used Fonts
+
+- Suppose you have a Google font that is used frequently
+
+- You don't want to download it every time you use it
+
+--
+
+- `showtext` allows you to install it to the `showtextdb` package
+
+```r
+opensans = google_fonts("Open Sans")
+font_install(opensans)
+list.files(system.file("fonts", package = "showtextdb"))
+```
+
+```
+## [1] "AUTHORS.txt.tar.gz"   "LICENSE_Apache2.txt"  "Open Sans"           
+## [4] "wqy-microhei.ttc.zip"
+```
+
+```r
+font_families()
+```
+
+```
+## [1] "sans"         "serif"        "mono"         "wqy-microhei" "Open Sans"   
+## [6] "xkcd"         "Turret Road"
+```
+
+---
+
+# Save Frequently Used Fonts - cont.
+
+- You can put any local fonts under the `fonts` folder of the `showtextdb` package
+
+- They will be automatically loaded by `showtext`
+
+- The directory name is the font family, with `regular.ttf`, `bold.ttf` etc. files inside the directory
+
+```r
+list.files(system.file("fonts", "Open Sans", package = "showtextdb"))
+```
+
+```
+## [1] "bold.ttf"       "bolditalic.ttf" "italic.ttf"     "regular.ttf"
+```
+
+--
+
+- .warning[Warning: The local fonts will be deleted if you upgrade/reinstall
+the `showtextdb` package]
+
+---
+
+# Use showtext in R Markdown
+
+- One option does it all: `fig.showtext = TRUE`
+
+``````yaml
+---
+title: "Title"
+author: "Author"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(showtext)
+font_add_google("Lobster", "lobster")
+```
+
+```{r fig.showtext=TRUE}
+plot(1, pch = 16, cex = 3)
+text(1, 1.1, "A fancy dot", family = "lobster", col = "steelblue", cex = 3)
+```
+``````
+
+---
+class: inverse
+
+# .comic[Be Cautious with Fonts!]
+
+- .comic[You probably don't want to use Comic Sans]...
+
+&lt;div class="center"&gt;
+&lt;image width="70%" src="images/doge.jpg" /&gt;
+&lt;/div&gt;
+
+???
+
+https://blog.hitbtc.com/dogecoin-such-wow-cryptocurrency-that-aims-to-help/
+
+---
+
+# Showcase
+
+.pull-left[
+
+`emojifont` (https://github.com/GuangchuangYu/emojifont)
+
+![](images/emojifont.png)
+
+]
+
+.pull-right[
+
+`meme` (https://github.com/GuangchuangYu/meme/)
+
+![](images/meme.png)
+
+]
+
+
+---
+
+# Showcase - cont.
+
+`trekfont` (https://github.com/leonawicz/trekfont)
+
+![](images/trekfont.png)
+
+---
+
+# Showcase - cont.
+
+`thematic` (https://github.com/rstudio/thematic)
+
+&lt;div class="center"&gt;
+&lt;image width="80%" src="images/thematic.png" /&gt;
+&lt;/div&gt;
+
+---
+
+# Showcase - cont.
+
+`ggcharts` (https://github.com/thomas-neitmann/ggcharts)
+
+.pull-left[
+
+![](images/ggcharts-1.png)
+
+]
+
+.pull-right[
+
+![](images/ggcharts-2.png)
+
+]
+
+---
+
+# Other Solutions
+
+- `extrafont`: TTF fonts + PDF device
+
+- `systemfonts`: Provides system native access to the font catalogue, nice combination with the `ragg` graphic device
+
+---
+
+# Special Thanks
+
+.pull-left[
+
+- Yihui Xie [@yihui](https://github.com/yihui), who kindly added `showtext` support to his fantastic [knitr](https://yihui.org/knitr/) package
+
+]
+
+.pull-right[
+
+- Carson Sievert [@cpsievert](https://github.com/cpsievert), who gave me numerous bug reports and suggestions, and helped me fix an issue that bothered me for years
+
+&lt;div class="center"&gt;
+&lt;image width="80%" src="images/cpsievert.png" /&gt;
+&lt;/div&gt;
+
+]
+
+---
+class: inverse, center, middle
+
+# What's Next?
+
+---
+
+# Pretty Documents
+
+- Now you have a pretty plot using some fancy fonts
+
+- You also want to include it in a nice-looking document
+
+- The built-in `html_document()` format in the `rmarkdown` package already has a `theme` option to support different styles
+
+- The `prettydoc` package provides more choices
+
+---
+
+# Overview of Themes
+
+.pull-left[
+
+Architect
+
+&lt;a href="https://cran.r-project.org/web/packages/prettydoc/vignettes/architect.html"&gt;
+&lt;image width="90%" src="images/architect.png" /&gt;
+&lt;/a&gt;
+
+]
+
+.pull-right[
+
+Cayman
+
+&lt;a href="https://cran.r-project.org/web/packages/prettydoc/vignettes/cayman.html"&gt;
+&lt;image width="90%" src="images/cayman.png" /&gt;
+&lt;/a&gt;
+
+]
+
+---
+
+# Overview of Themes - cont.
+
+.pull-left[
+
+HPSTR
+
+&lt;a href="https://cran.r-project.org/web/packages/prettydoc/vignettes/hpstr.html"&gt;
+&lt;image width="80%" src="images/hpstr.png" /&gt;
+&lt;/a&gt;
+
+]
+
+.pull-right[
+
+Tactile
+
+&lt;a href="https://cran.r-project.org/web/packages/prettydoc/vignettes/tactile.html"&gt;
+&lt;image width="90%" src="images/tactile.png" /&gt;
+&lt;/a&gt;
+
+]
+
+---
+
+# Overview of Themes - cont.
+
+Leonids
+
+[![](images/leonids.png)](https://cran.r-project.org/web/packages/prettydoc/vignettes/leonids.html)
+
+---
+
+# Quick Start
+
+.left27[
+
+Step 1
+
+![](images/step1.png)
+
+]
+
+.right70[
+
+Step 2
+
+![](images/step2.png)
+
+]
+
+---
+
+# What's Special about prettydoc?
+
+- Provides more stylish themes if you are bored with the default ones
+
+- Small in size, no Bootstrap or other heavy libraries
+
+- A good choice for package vignettes
+
+- Some unique features
+
+---
+
+# Options
+
+- Specify options similar to the default `html_document()` format
+
+```yaml
+---
+title: "Title"
+author: "Author"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc: true
+toc-title: "Table of Contents"
+---
+```
+--
+
+- `themes`: architect, cayman, hpstr, tactile, leonids
+
+- `highlight`: github, vignette, null
+
+---
+
+# Offline Math Expressions
+
+- Unique in `prettydoc`
+
+- Option to use the lightweight [KaTeX](https://katex.org/) library to render math expressions
+
+```yaml
+---
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    math: katex
+---
+```
+
+- Documents can be viewed without Internet connections
+
+---
+
+# What's Missing in prettydoc :(
+
+- No float table of contents
+
+- No tabbed sections
+
+- .warning[Help needed!]
+
+---
+
+# Other Templates
+
+- `rmdformats` (https://github.com/juba/rmdformats)
+
+- `minidown` (https://github.com/atusy/minidown)
+
+- `tufte` (https://github.com/rstudio/tufte)
+
+- `BiocStyle` (https://github.com/Bioconductor/BiocStyle)
+
+- `markdowntemplates` (https://github.com/hrbrmstr/markdowntemplates)
+
+---
+background-image: url(images/github.png)
+background-size: 128px
+background-position: 90% 10%
+
+# Links
+
+- `showtext`: https://github.com/yixuan/showtext
+
+- `prettydoc`: https://github.com/yixuan/prettydoc
+
+- Personal website: https://statr.me
+
+- Email: yixuanq@gmail.com
+
+---
+class: inverse, middle, center
+
+# Thanks!
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
